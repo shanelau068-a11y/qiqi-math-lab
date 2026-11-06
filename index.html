@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>旗子飘向右面，奇奇向哪走</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #eaf6ff;
+        --bg2: #fff7e6;
+        --card: #ffffff;
+        --ink: #22314a;
+        --ink-soft: #4a5b78;
+        --line: #d7e6f5;
+        --blue: #2f8fe8;
+        --blue-dark: #1665b8;
+        --green: #35b558;
+        --green-dark: #1e8a3e;
+        --orange: #ff8a3d;
+        --red: #ef4756;
+        --yellow: #ffc93d;
+        --chip: #eef4fb;
+        --shadow: 0 10px 28px rgba(34, 80, 140, .14);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #101c2e;
+          --bg2: #16233a;
+          --card: #1c2c47;
+          --ink: #eef4fd;
+          --ink-soft: #b9c9e2;
+          --line: #31486c;
+          --chip: #26395c;
+          --shadow: 0 10px 28px rgba(0, 0, 0, .4);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        font-family: "PingFang SC", "Hiragino Sans GB", "Yuanti SC", "Microsoft YaHei", sans-serif;
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+        color: var(--ink);
+        line-height: 1.6;
+      }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 20px 16px 56px; }
+      h1, h2, .fun { font-family: "ZCOOL KuaiLe", "PingFang SC", "Yuanti SC", "Microsoft YaHei", sans-serif; font-weight: 400; letter-spacing: .02em; }
+
+      /* ---------- 题目卡 ---------- */
+      .qcard {
+        background: var(--card); border: 3px solid var(--line); border-radius: 24px;
+        box-shadow: var(--shadow); padding: 22px 22px 18px; margin-top: 6px;
+      }
+      .qtag {
+        display: inline-block; background: var(--orange); color: #fff; font-size: 15px;
+        padding: 3px 14px; border-radius: 999px; margin-bottom: 10px;
+      }
+      .qtext { font-size: clamp(21px, 5.4vw, 27px); line-height: 1.65; margin: 0 0 6px; font-weight: 700; }
+      .qtext .key { color: var(--red); border-bottom: 4px solid var(--yellow); padding: 0 2px; }
+      .qtext .wind { color: var(--blue-dark); border-bottom: 4px solid #a9d6ff; padding: 0 2px; }
+      @media (prefers-color-scheme: dark) { .qtext .wind { color: #8fc6ff; } }
+      .opts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+      .opt {
+        background: var(--chip); border-radius: 14px; padding: 8px 18px;
+        font-size: 20px; font-weight: 700;
+      }
+
+      /* ---------- 舞台 ---------- */
+      .stage-card {
+        background: var(--card); border: 3px solid var(--line); border-radius: 24px;
+        box-shadow: var(--shadow); padding: 18px; margin-top: 20px;
+      }
+      .stage-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+      .stage-head h2 { font-size: clamp(21px, 5vw, 26px); margin: 0; }
+      .compass-note { font-size: 15px; color: var(--ink-soft); margin: 0; }
+      .stage-box { position: relative; margin-top: 12px; border-radius: 18px; overflow: hidden; }
+      svg.stage { display: block; width: 100%; height: auto; }
+
+      .readout {
+        display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px;
+      }
+      .readout .cell {
+        flex: 1 1 150px; background: var(--chip); border-radius: 14px; padding: 10px 14px;
+        font-size: 16px;
+      }
+      .readout .cell b { display: block; font-size: 20px; margin-top: 2px; }
+      .readout .cell.wind-cell b { color: var(--blue-dark); }
+      .readout .cell.right-cell b { color: var(--red); }
+      .readout .cell.face-cell b { color: var(--green-dark); }
+      @media (prefers-color-scheme: dark) {
+        .readout .cell.wind-cell b { color: #8fc6ff; }
+        .readout .cell.face-cell b { color: #6fdc8f; }
+      }
+
+      .verdict {
+        margin-top: 14px; border-radius: 16px; padding: 14px 18px; font-size: 19px; font-weight: 700;
+        background: #fff3d6; border: 2px dashed var(--orange); color: #8a5a00;
+        min-height: 62px; display: flex; align-items: center;
+      }
+      @media (prefers-color-scheme: dark) { .verdict { background: #3a2f14; color: #ffd97a; } }
+      .verdict.good { background: #dcf7e3; border: 2px solid var(--green); color: var(--green-dark); }
+      @media (prefers-color-scheme: dark) { .verdict.good { background: #173b24; color: #8fe6a8; } }
+      .verdict.bad { background: #fdeef0; border: 2px dashed var(--red); color: #b02a38; }
+      @media (prefers-color-scheme: dark) { .verdict.bad { background: #3d1a20; color: #ff9aa5; } }
+
+      .turn-row { margin-top: 16px; }
+      .turn-row p { margin: 0 0 10px; font-size: 17px; font-weight: 700; }
+      .turn-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+      .turn-btn {
+        appearance: none; border: 3px solid var(--line); background: var(--card); color: var(--ink);
+        border-radius: 16px; padding: 12px 4px 10px; cursor: pointer;
+        font-family: inherit; font-size: 22px; font-weight: 800;
+        display: flex; flex-direction: column; align-items: center; gap: 2px;
+        transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      }
+      .turn-btn small { font-size: 13px; font-weight: 600; color: var(--ink-soft); }
+      .turn-btn .arr { font-size: 20px; line-height: 1; color: var(--blue); }
+      .turn-btn:active { transform: scale(.96); }
+      .turn-btn.active { border-color: var(--green); background: #eafaf0; }
+      @media (prefers-color-scheme: dark) { .turn-btn.active { background: #173b24; } }
+      .turn-btn.answer { border-color: var(--green); background: #dcf7e3; box-shadow: 0 0 0 4px rgba(53,181,88,.25); }
+      @media (max-width: 430px) { .turn-btn { font-size: 19px; } }
+
+      /* ---------- 三步讲解 ---------- */
+      .steps-title { font-size: clamp(22px, 5.4vw, 28px); margin: 34px 0 6px; }
+      .steps-sub { color: var(--ink-soft); margin: 0 0 14px; font-size: 16px; }
+      .steps { display: grid; grid-template-columns: 1fr; gap: 14px; }
+      @media (min-width: 720px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+      .step {
+        background: var(--card); border: 3px solid var(--line); border-radius: 20px;
+        padding: 16px; box-shadow: var(--shadow);
+      }
+      .step .num {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 34px; height: 34px; border-radius: 50%; color: #fff; font-size: 19px; font-weight: 800;
+        background: var(--blue); margin-bottom: 8px;
+      }
+      .step:nth-child(2) .num { background: var(--orange); }
+      .step:nth-child(3) .num { background: var(--green); }
+      .step h3 { margin: 0 0 6px; font-size: 20px; }
+      .step p { margin: 0; font-size: 16px; color: var(--ink-soft); }
+      .step p b { color: var(--ink); }
+      .step svg { display: block; margin: 10px auto 4px; }
+
+      /* ---------- 答案与口诀 ---------- */
+      .answer-card {
+        margin-top: 22px; border-radius: 24px; padding: 22px;
+        background: linear-gradient(135deg, #2fbf71, #1e9e57); color: #fff;
+        box-shadow: var(--shadow); display: none;
+      }
+      .answer-card.show { display: block; }
+      .answer-card h2 { margin: 0 0 6px; font-size: clamp(24px, 6vw, 32px); }
+      .answer-card p { margin: 0; font-size: 18px; }
+      .rhyme {
+        margin-top: 22px; background: var(--card); border: 3px dashed var(--yellow);
+        border-radius: 20px; padding: 18px 20px; text-align: center; box-shadow: var(--shadow);
+      }
+      .rhyme .fun { font-size: clamp(20px, 5.4vw, 26px); margin: 0; line-height: 1.8; }
+      .rhyme small { color: var(--ink-soft); font-size: 14px; }
+
+      /* ---------- 练一练 ---------- */
+      .practice {
+        margin-top: 22px; background: var(--card); border: 3px solid var(--line);
+        border-radius: 24px; padding: 20px 22px; box-shadow: var(--shadow);
+      }
+      .practice h2 { margin: 0 0 6px; font-size: clamp(21px, 5vw, 26px); }
+      .practice .pq { font-size: 19px; font-weight: 700; margin: 0 0 14px; }
+      .practice .pq .key { color: var(--red); }
+      .practice .pq .wind { color: var(--blue-dark); }
+      @media (prefers-color-scheme: dark) { .practice .pq .wind { color: #8fc6ff; } }
+      .p-opts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+      .p-opt {
+        appearance: none; border: 3px solid var(--line); background: var(--card); color: var(--ink);
+        border-radius: 14px; padding: 12px 4px; font-family: inherit; font-size: 21px; font-weight: 800; cursor: pointer;
+        transition: transform .12s ease, border-color .12s ease, background .12s ease;
+      }
+      .p-opt:active { transform: scale(.96); }
+      .p-opt.right { border-color: var(--green); background: #dcf7e3; color: var(--green-dark); }
+      .p-opt.wrong { border-color: var(--red); background: #fdeef0; color: #b02a38; }
+      @media (prefers-color-scheme: dark) {
+        .p-opt.right { background: #173b24; color: #8fe6a8; }
+        .p-opt.wrong { background: #3d1a20; color: #ff9aa5; }
+      }
+      .p-feedback { margin: 14px 0 0; font-size: 17px; font-weight: 700; min-height: 28px; }
+
+      .foot { text-align: center; color: var(--ink-soft); font-size: 14px; margin-top: 30px; }
+
+      /* ---------- SVG 动画 ---------- */
+      #boyGroup { transition: transform 0.7s cubic-bezier(.34, 1.4, .44, 1); }
+      #flagCloth { transition: transform 0.7s cubic-bezier(.34, 1.4, .44, 1); }
+      .bob { animation: bob 0.9s ease-in-out infinite; transform-origin: 200px 205px; }
+      @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+      .wind-streak { animation: windmove 2.2s linear infinite; }
+      .wind-streak.s2 { animation-duration: 2.8s; animation-delay: .5s; }
+      .wind-streak.s3 { animation-duration: 1.9s; animation-delay: 1.1s; }
+      @keyframes windmove {
+        0% { transform: translateY(26px); opacity: 0; }
+        18% { opacity: .9; }
+        82% { opacity: .9; }
+        100% { transform: translateY(-30px); opacity: 0; }
+      }
+      .flag-wave { animation: flagwave 0.8s ease-in-out infinite; transform-origin: 0px 0px; }
+      @keyframes flagwave { 0%,100% { transform: skewX(0deg) scaleY(1); } 50% { transform: skewX(-7deg) scaleY(1.05); } }
+      .star-pop { position: absolute; pointer-events: none; font-size: 26px; animation: pop 1.1s ease-out forwards; }
+      @keyframes pop {
+        0% { transform: translate(0,0) scale(.4) rotate(0deg); opacity: 1; }
+        100% { transform: translate(var(--dx), var(--dy)) scale(1.25) rotate(160deg); opacity: 0; }
+      }
+      .step-arrow { animation: stepmove 1.6s ease-in-out infinite; }
+      @keyframes stepmove { 0%,100% { transform: translateY(6px); opacity: .45; } 50% { transform: translateY(-6px); opacity: 1; } }
+      .step-flag { animation: stepflag 1.4s ease-in-out infinite; transform-origin: left center; }
+      @keyframes stepflag { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(5deg); } }
+      @media (prefers-reduced-motion: reduce) {
+        .bob, .wind-streak, .flag-wave, .step-arrow, .step-flag { animation: none; }
+        #boyGroup, #flagCloth { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+
+      <!-- 题目 -->
+      <section class="qcard">
+        <span class="qtag fun">第 4 题 · 方向小侦探</span>
+        <p class="qtext">奇奇拿着一面旗子向前走，旗子飘向他的<span class="key">右面</span>。已知刮的是<span class="wind">南风</span>，奇奇正在向（&nbsp;&nbsp;）走。</p>
+        <div class="opts">
+          <span class="opt">① 东</span>
+          <span class="opt">② 西</span>
+          <span class="opt">③ 南</span>
+          <span class="opt">④ 北</span>
+        </div>
+      </section>
+
+      <!-- 动画舞台 -->
+      <section class="stage-card">
+        <div class="stage-head">
+          <h2>🗺️ 从天上往下看</h2>
+          <p class="compass-note">地图上：上北 · 下南 · 左西 · 右东</p>
+        </div>
+
+        <div class="stage-box" id="stageBox">
+          <svg class="stage" viewBox="0 0 400 400" role="img" aria-label="俯视图：奇奇站在中间，南风从南往北吹，旗子飘向北边">
+            <defs>
+              <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="#57a8ef" />
+              </marker>
+              <marker id="arrGreen" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+                <path d="M0,0 L10,5 L0,10 z" fill="#2ea84f" />
+              </marker>
+            </defs>
+
+            <!-- 地面 -->
+            <rect x="0" y="0" width="400" height="400" fill="#bfe6a8" />
+            <rect x="0" y="0" width="400" height="400" fill="#a8d98d" opacity="0.35" />
+            <!-- 十字小路 -->
+            <rect x="176" y="0" width="48" height="400" fill="#f2ddae" />
+            <rect x="0" y="181" width="400" height="48" fill="#f2ddae" />
+            <rect x="176" y="0" width="48" height="400" fill="none" stroke="#e3c98c" stroke-width="3" stroke-dasharray="10 8" />
+            <!-- 小树装饰 -->
+            <g font-size="30">
+              <text x="36" y="80">🌳</text>
+              <text x="330" y="90">🌳</text>
+              <text x="44" y="330">🌷</text>
+              <text x="322" y="322">🌳</text>
+            </g>
+
+            <!-- 风流线：从南往北 -->
+            <g stroke="#57a8ef" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.9">
+              <path class="wind-streak" d="M96,300 C 88,260 104,220 96,168" marker-end="url(#arrBlue)" />
+              <path class="wind-streak s2" d="M304,310 C 312,268 296,228 304,176" marker-end="url(#arrBlue)" />
+              <path class="wind-streak s3" d="M130,120 C 124,92 134,66 128,40" marker-end="url(#arrBlue)" />
+              <path class="wind-streak s2" d="M272,118 C 278,90 268,64 274,38" marker-end="url(#arrBlue)" />
+            </g>
+            <text x="316" y="356" font-size="17" font-weight="700" fill="#1665b8">南风 💨</text>
+
+            <!-- 方位牌 -->
+            <g font-weight="800" text-anchor="middle">
+              <circle cx="200" cy="30" r="21" fill="#ef4756" />
+              <text x="200" y="39" font-size="21" fill="#fff">北</text>
+              <circle cx="200" cy="370" r="21" fill="#7a8aa0" />
+              <text x="200" y="379" font-size="21" fill="#fff">南</text>
+              <circle cx="370" cy="205" r="21" fill="#7a8aa0" />
+              <text x="370" y="214" font-size="21" fill="#fff">东</text>
+              <circle cx="30" cy="205" r="21" fill="#7a8aa0" />
+              <text x="30" y="214" font-size="21" fill="#fff">西</text>
+            </g>
+
+            <!-- 旗子飘向虚线（固定朝北） -->
+            <line id="flagDirLine" x1="203" y1="217" x2="203" y2="117" stroke="#ef4756" stroke-width="3" stroke-dasharray="7 6" />
+            <text id="flagDirText" x="211" y="112" font-size="15" font-weight="700" fill="#ef4756">旗子飘向北</text>
+
+            <!-- 奇奇（俯视） -->
+            <g class="bob">
+              <g id="boyGroup">
+                <!-- 前进箭头 -->
+                <line x1="200" y1="146" x2="200" y2="112" stroke="#2ea84f" stroke-width="7" stroke-linecap="round" marker-end="url(#arrGreen)" />
+                <!-- 左右手 -->
+                <line x1="176" y1="216" x2="156" y2="230" stroke="#f2a65a" stroke-width="13" stroke-linecap="round" />
+                <line x1="224" y1="212" x2="246" y2="202" stroke="#f2a65a" stroke-width="13" stroke-linecap="round" />
+                <!-- 身体 -->
+                <circle cx="200" cy="205" r="33" fill="#ff8a3d" />
+                <circle cx="200" cy="205" r="33" fill="none" stroke="#e06f1f" stroke-width="3" />
+                <!-- 头 -->
+                <circle cx="200" cy="203" r="19" fill="#ffd9b3" />
+                <path d="M181,203 a19,19 0 0 1 38,0 l0,-4 a19,15 0 0 0 -38,0 z" fill="#5a3a22" />
+                <!-- 帽子（帽檐朝前） -->
+                <circle cx="200" cy="196" r="12" fill="#2f8fe8" />
+                <rect x="191" y="178" width="18" height="8" rx="4" fill="#1665b8" />
+                <!-- 右手边标记 -->
+                <g>
+                  <circle cx="238" cy="238" r="14" fill="#ef4756" />
+                  <text x="238" y="245" font-size="15" font-weight="800" fill="#fff" text-anchor="middle">右</text>
+                </g>
+                <!-- 左手边标记 -->
+                <g>
+                  <circle cx="162" cy="240" r="14" fill="#7a8aa0" />
+                  <text x="162" y="247" font-size="15" font-weight="800" fill="#fff" text-anchor="middle">左</text>
+                </g>
+              </g>
+              <!-- 旗杆（从右手朝北竖起，永远指向北） -->
+              <line id="flagPole" x1="203" y1="251" x2="203" y2="217" stroke="#8a5a2b" stroke-width="5" stroke-linecap="round" />
+              <!-- 旗面（永远朝北飘，单独定位） -->
+              <g id="flagCloth" transform="translate(203,217)">
+                <g class="flag-wave">
+                  <path d="M0,0 C -8,-16 6,-28 0,-44 C -3,-52 1,-56 3,-62 L 20,-57 C 15,-44 23,-30 18,-16 C 15,-7 18,-2 12,3 Z" fill="#ef4756" stroke="#c62f3d" stroke-width="2" />
+                  <polygon points="9,-35 10.9,-30.4 15.8,-30.2 11.9,-27.1 13.2,-22.4 9,-25.4 4.8,-22.4 6.1,-27.1 2.2,-30.2 7.1,-30.4" fill="#ffd93d" />
+                </g>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <div class="readout">
+          <div class="cell wind-cell">💨 风往哪儿吹<b>向北吹</b></div>
+          <div class="cell">🚩 旗子飘向<b>北边</b></div>
+          <div class="cell right-cell">✋ 奇奇的右手边<b id="rightReadout">南边</b></div>
+          <div class="cell face-cell">🚶 奇奇现在面向<b id="faceReadout">东边</b></div>
+        </div>
+
+        <p class="verdict" id="verdict">旗子飘向北边，可是奇奇的右手边是南边，对不上哦！再帮他转一转吧。</p>
+
+        <div class="turn-row">
+          <p>👇 点一点，让奇奇转个方向走一走：</p>
+          <div class="turn-btns">
+            <button type="button" class="turn-btn active" data-dir="east"><span class="arr">➡️</span>东<small>向东走</small></button>
+            <button type="button" class="turn-btn" data-dir="west"><span class="arr">⬅️</span>西<small>向西走</small></button>
+            <button type="button" class="turn-btn" data-dir="south"><span class="arr">⬇️</span>南<small>向南走</small></button>
+            <button type="button" class="turn-btn" data-dir="north"><span class="arr">⬆️</span>北<small>向北走</small></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 答案 -->
+      <section class="answer-card" id="answerCard">
+        <h2>🎉 答对啦！答案是 ② 西</h2>
+        <p>奇奇的右手边是北边的时候，他正面向<b>西边</b>走。所以选 <b>② 西</b>。</p>
+      </section>
+
+      <!-- 三步想通它 -->
+      <h2 class="steps-title fun">🧠 三步想通它</h2>
+      <p class="steps-sub">下次遇到这样的题，就按这三步慢慢想：</p>
+      <div class="steps">
+        <div class="step">
+          <span class="num">1</span>
+          <h3 class="fun">南风从南边来</h3>
+          <svg width="110" height="110" viewBox="0 0 110 110" aria-hidden="true">
+            <circle cx="55" cy="55" r="50" fill="#eef4fb" />
+            <text x="55" y="22" font-size="16" font-weight="800" text-anchor="middle" fill="#ef4756">北</text>
+            <text x="55" y="100" font-size="16" font-weight="800" text-anchor="middle" fill="#4a5b78">南</text>
+            <text x="97" y="61" font-size="16" font-weight="800" text-anchor="middle" fill="#4a5b78">东</text>
+            <text x="13" y="61" font-size="16" font-weight="800" text-anchor="middle" fill="#4a5b78">西</text>
+            <g class="step-arrow">
+              <line x1="55" y1="76" x2="55" y2="38" stroke="#2f8fe8" stroke-width="6" stroke-linecap="round" />
+              <path d="M44,44 L55,30 L66,44 z" fill="#2f8fe8" />
+            </g>
+          </svg>
+          <p>风的名字，就是它<b>从哪儿来</b>。南风从<b>南边</b>吹来，一路吹向<b>北边</b>。</p>
+        </div>
+        <div class="step">
+          <span class="num">2</span>
+          <h3 class="fun">旗子跟着风跑</h3>
+          <svg width="110" height="110" viewBox="0 0 110 110" aria-hidden="true">
+            <line x1="34" y1="96" x2="34" y2="26" stroke="#8a5a2b" stroke-width="5" stroke-linecap="round" />
+            <g class="step-flag">
+              <path d="M34,28 C 48,20 58,30 74,24 L 74,44 C 58,50 48,40 34,48 Z" fill="#ef4756" />
+            </g>
+            <g stroke="#57a8ef" stroke-width="4" stroke-linecap="round">
+              <line x1="52" y1="66" x2="80" y2="66" />
+              <line x1="46" y1="80" x2="70" y2="80" />
+            </g>
+            <path d="M80,60 L92,66 L80,72 z" fill="#57a8ef" />
+          </svg>
+          <p>风往北吹，旗子就被吹向<b>北边</b>。所以奇奇看到旗子飘向他的右面，就说明<b>他的右面是北边</b>。</p>
+        </div>
+        <div class="step">
+          <span class="num">3</span>
+          <h3 class="fun">右面是北，面向西</h3>
+          <svg width="110" height="110" viewBox="0 0 110 110" aria-hidden="true">
+            <circle cx="55" cy="55" r="50" fill="#eef4fb" />
+            <text x="55" y="22" font-size="16" font-weight="800" text-anchor="middle" fill="#ef4756">北</text>
+            <text x="55" y="100" font-size="16" font-weight="800" text-anchor="middle" fill="#4a5b78">南</text>
+            <text x="97" y="61" font-size="16" font-weight="800" text-anchor="middle" fill="#4a5b78">东</text>
+            <text x="13" y="61" font-size="16" font-weight="800" text-anchor="middle" fill="#4a5b78">西</text>
+            <circle cx="55" cy="57" r="13" fill="#ff8a3d" />
+            <path d="M40,57 L24,57" stroke="#2ea84f" stroke-width="6" stroke-linecap="round" />
+            <path d="M30,49 L18,57 L30,65 z" fill="#2ea84f" />
+            <path d="M55,44 L55,34" stroke="#ef4756" stroke-width="5" stroke-linecap="round" />
+            <text x="63" y="38" font-size="12" font-weight="800" fill="#ef4756">右手</text>
+          </svg>
+          <p>站起来试一试：让你的<b>右手指向北边</b>，你的脸正对着的，就是<b>西边</b>！所以奇奇向<b>西</b>走。</p>
+        </div>
+      </div>
+
+      <!-- 口诀 -->
+      <div class="rhyme">
+        <p class="fun">🎵 记住这个小口诀<br />南风起，旗朝北；<br />右手是北，我朝西。</p>
+        <small>遇到别的风，也先想：风从哪儿来，旗子往哪儿飘。</small>
+      </div>
+
+      <!-- 练一练 -->
+      <section class="practice">
+        <h2 class="fun">✏️ 练一练</h2>
+        <p class="pq">换一道：如果刮的是<span class="wind">北风</span>，旗子还是飘向奇奇的<span class="key">右面</span>，奇奇正在向（&nbsp;&nbsp;）走？</p>
+        <div class="p-opts">
+          <button type="button" class="p-opt" data-p="east">① 东</button>
+          <button type="button" class="p-opt" data-p="west">② 西</button>
+          <button type="button" class="p-opt" data-p="south">③ 南</button>
+          <button type="button" class="p-opt" data-p="north">④ 北</button>
+        </div>
+        <p class="p-feedback" id="pFeedback">想一想：北风从北边吹来，旗子会飘向哪边呢？</p>
+      </section>
+
+      <p class="foot">给齐齐的方向练习 · 旗子与风</p>
+    </div>
+
+    <script>
+      (function () {
+        var DIRS = {
+          east:  { deg: 90,  name: '东边', right: '南边' },
+          west:  { deg: 270, name: '西边', right: '北边' },
+          south: { deg: 180, name: '南边', right: '西边' },
+          north: { deg: 0,   name: '北边', right: '东边' }
+        };
+        // 右手在奇奇本地坐标中的位置（本地：前方为 -y，右方为 +x），舞台中心 (200,205)
+        // 旗杆从右手朝正北竖起 34，旗面再从杆顶向北飘
+        var HAND = { x: 46, y: -3 };
+        var POLE_LEN = 34;
+        var CENTER = { x: 200, y: 205 };
+
+        var boyGroup = document.getElementById('boyGroup');
+        var flagPole = document.getElementById('flagPole');
+        var flagCloth = document.getElementById('flagCloth');
+        var flagLine = document.getElementById('flagDirLine');
+        var flagText = document.getElementById('flagDirText');
+        var verdict = document.getElementById('verdict');
+        var rightReadout = document.getElementById('rightReadout');
+        var faceReadout = document.getElementById('faceReadout');
+        var answerCard = document.getElementById('answerCard');
+        var stageBox = document.getElementById('stageBox');
+        var buttons = Array.prototype.slice.call(document.querySelectorAll('.turn-btn'));
+        var solved = false;
+
+        function handWorld(deg) {
+          var rad = deg * Math.PI / 180;
+          var cos = Math.cos(rad), sin = Math.sin(rad);
+          return {
+            x: CENTER.x + HAND.x * cos - HAND.y * sin,
+            y: CENTER.y + HAND.x * sin + HAND.y * cos
+          };
+        }
+
+        function burst() {
+          var stars = ['⭐', '🎉', '✨', '🌟'];
+          for (var i = 0; i < 14; i++) {
+            var s = document.createElement('span');
+            s.className = 'star-pop';
+            s.textContent = stars[i % stars.length];
+            var ang = (Math.PI * 2 * i) / 14 + Math.random() * 0.4;
+            var dist = 90 + Math.random() * 110;
+            s.style.setProperty('--dx', Math.cos(ang) * dist + 'px');
+            s.style.setProperty('--dy', (Math.sin(ang) * dist - 40) + 'px');
+            s.style.left = '50%';
+            s.style.top = '42%';
+            stageBox.appendChild(s);
+            (function (el) { setTimeout(function () { el.remove(); }, 1200); })(s);
+          }
+        }
+
+        function setDir(key) {
+          var d = DIRS[key];
+          boyGroup.setAttribute('transform', 'rotate(' + d.deg + ' 200 205)');
+          var h = handWorld(d.deg);
+          var p = { x: h.x, y: h.y - POLE_LEN };
+          flagPole.setAttribute('x1', h.x.toFixed(1));
+          flagPole.setAttribute('y1', h.y.toFixed(1));
+          flagPole.setAttribute('x2', p.x.toFixed(1));
+          flagPole.setAttribute('y2', p.y.toFixed(1));
+          flagCloth.setAttribute('transform', 'translate(' + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ')');
+          flagLine.setAttribute('x1', p.x.toFixed(1));
+          flagLine.setAttribute('y1', p.y.toFixed(1));
+          flagLine.setAttribute('x2', p.x.toFixed(1));
+          flagLine.setAttribute('y2', (p.y - 100).toFixed(1));
+          flagText.setAttribute('x', (p.x + 8).toFixed(1));
+          flagText.setAttribute('y', Math.max(p.y - 106, 66).toFixed(1));
+
+          rightReadout.textContent = d.right;
+          faceReadout.textContent = d.name;
+
+          buttons.forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-dir') === key);
+            b.classList.toggle('answer', solved && b.getAttribute('data-dir') === 'west');
+          });
+
+          if (key === 'west') {
+            verdict.className = 'verdict good';
+            verdict.textContent = '🎉 对上啦！旗子飘向北边，奇奇的右手边也是北边——他正在向西走！';
+            if (!solved) {
+              solved = true;
+              answerCard.classList.add('show');
+              burst();
+              buttons.forEach(function (b) {
+                b.classList.toggle('answer', b.getAttribute('data-dir') === 'west');
+              });
+            }
+          } else {
+            verdict.className = 'verdict bad';
+            verdict.textContent = '旗子飘向北边，可是奇奇向' + d.name + '走时，右手边是' + d.right + '，对不上哦！再转一转吧。';
+          }
+        }
+
+        buttons.forEach(function (b) {
+          b.addEventListener('click', function () { setDir(b.getAttribute('data-dir')); });
+        });
+        setDir('east');
+        // 初始状态不算“答错”，换成提示语
+        verdict.className = 'verdict';
+        verdict.textContent = '现在奇奇向东走，右手边是南边，可旗子飘向北边——对不上！点下面的按钮帮他转一转。';
+
+        /* ---------- 练一练 ---------- */
+        var pFeedback = document.getElementById('pFeedback');
+        var pSolved = false;
+        document.querySelectorAll('.p-opt').forEach(function (b) {
+          b.addEventListener('click', function () {
+            if (pSolved) return;
+            var v = b.getAttribute('data-p');
+            if (v === 'east') {
+              b.classList.add('right');
+              pFeedback.textContent = '🎉 答对啦！北风往南吹，旗子飘向南边；右手边是南边时，人正面向东边。';
+              pSolved = true;
+            } else {
+              b.classList.add('wrong');
+              var rightMap = { west: '北边', south: '西边', north: '东边' };
+              pFeedback.textContent = '再想想：北风把旗子吹向南边。向' + b.textContent.slice(2) + '走时，右手边是' + rightMap[v] + '，不是南边哦。';
+            }
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
